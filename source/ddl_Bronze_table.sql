@@ -1,6 +1,4 @@
-
-
-CREATE TABLE IF NOT EXISTS jobs (
+CREATE TABLE IF NOT EXISTS job_search_project_catalog.job_search_project_schema.table_bronze_job_search (
     job_id STRING,
     job_title STRING,
     employer_name STRING,
@@ -34,6 +32,11 @@ CREATE TABLE IF NOT EXISTS jobs (
     job_highlights MAP<STRING, ARRAY<STRING>>,
     job_onet_soc STRING,
     job_onet_job_zone STRING,
-    employer_reviews MAP<STRING, STRING>,
+    employer_reviews STRING,
     job_uid STRING
 );
+
+alter table job_search_project_catalog.job_search_project_schema.table_bronze_job_search
+add columns 
+    ingestion_timestamp TIMESTAMP,
+    ingestion_source STRING

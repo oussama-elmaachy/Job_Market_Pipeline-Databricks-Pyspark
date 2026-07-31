@@ -1,33 +1,32 @@
 import requests
 
 class api_job_search:
-
-
-  def __init__(self,api_token, url,api_host,job_title):
-    self.api_token = api_token
-    self.url = url
-    self.api_host = api_host
-    self.job_title = job_title
+  def __init__(self,token,url,host):
+    self.api_token = token
+    self.api_url = url
+    self.api_host = host
     
-  def get_jobs(self,api_token, url,api_host,job_title):
+  def get_jobs(self,job_title,country,date_posted):
       
     headers={
-                "x-rapidapi-key": api_token,
-                "x-rapidapi-host": api_host 
+                "x-rapidapi-key": self.api_token,
+                "x-rapidapi-host": self.api_host 
             }
     querystring = {
                     "query":job_title,
                     "page":"1",
                     "num_pages":"50",
-                    "country":"fr",
-                    "date_posted":"all"
+                    "country":country,
+                    "date_posted":date_posted
                    }
     try :
-        response= requests.get(url, headers=headers, params=querystring)
+
+        response= requests.get(self.api_url, headers=headers, params=querystring)
         results=response.json()
         raw_data=results['data']
         return raw_data
+      
     except Exception as e:
+
         print("Error occurred while fetching data from API:", e)
         return None
-
