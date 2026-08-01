@@ -60,10 +60,13 @@ def create_Df(spark,data,schema_bronze=api_job_search_project_schema):
             .withColumn("ingestion_source",lit("api_source")) 
              )
         return df
-    except :
-        print("error")
-        return None
-
+    except Exception as e:
+        print("error :", e)
+        empty_df = spark.createDataFrame([], schema_bronze)
+        return (
+            empty_df.withColumn('ingestion_timestamp',current_timestamp())
+                .withColumn("ingestion_source",lit("api_source")) 
+        )
 
 def merge_df_target(spark,df_source,df_target):
     target=DeltaTable.forName(spark,df_target)

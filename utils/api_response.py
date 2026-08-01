@@ -22,8 +22,8 @@ class api_job_search:
     try :
 
         response= requests.get(self.api_url, headers=headers, params=querystring)
-        results=response.json()
-        raw_data=results['data']
+        resulats=response.json()
+        raw_data=resulats['data']
         return raw_data
       
     except Exception as e:
