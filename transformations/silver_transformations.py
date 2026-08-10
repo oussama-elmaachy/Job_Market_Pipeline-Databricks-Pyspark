@@ -1,27 +1,47 @@
 from utils.spark_utils import get_spark
+from utils.geo_location import get_geo_location,schema_location
 from datetime import datetime
+from utils.config import (catalog_name,schema_name,bronze_table,silver_table,checkpoint_silver_table,publisher_table,employer_table,location_table)
 from zoneinfo import ZoneInfo
 from delta.tables import DeltaTable
 from pyspark.sql.functions import  (
-        lit,current_timestamp,col,current_timestamp,lower,when,to_timestamp,from_utc_timestamp,date_format,concat_ws,format_number,trim,regexp_replace,translate,initcap
+        lit,current_timestamp,col,current_timestamp,lower,when,to_timestamp,from_utc_timestamp,date_format,concat_ws,format_number,trim,regexp_replace,translate,initcap,max
         )
 #function to use for the silver table
 
-def filter_df(df):
+def filter_silver_df(df):
+    df=df.selectExpr("job_id",
+                     "job_title",
+                     "employer_name",
+                     "job_publisher",
+                    "job_employment_type",
+                    "job_apply_link",
+                    "job_apply_link_direct"
+                     "job_description",
+                     "job_is_remote",
+                     "job_posted_at_datetime_utc",
+                     "job_latitude",
+                     "job_longitude",
+                    "ingestion_timestamp",
+                    "ingestion_source"
+                    )
+
+
     return (
-        df.filter(col('job_posted_at_datetime_utc').isNotNull())
+                    df.filter(col('job_posted_at_datetime_utc').isNotNull())
         )
 
 def add_job_type(df):
-    dff=df.withColumn('job_employment_type',lower(col('job_employment_type')))
+
+    df=df.withColumn('job_employment_type',lower(col('job_employment_type')))
+
     freelance_condition = (
         col('job_employment_type').contains('freelance')|col('job_employment_type').contains('free-lance')|col('job_employment_type').contains('free lance'))
     cdi_condition = (
         col('job_employment_type').contains('stage') | col('job_employment_type').contains('alternan') | col('job_employment_type').contains('plein temps') | col('job_employment_type').contains('temps partiel')
         )
 
-
-    return dff.withColumn('job_type',
+    return df.withColumn('job_type',
         when(col('job_employment_type').contains('stage'),lit('Stage'))
         .when(col('job_employment_type').contains('alternan'),lit('Alternance'))
         .when(freelance_condition,lit('Freelance'))
@@ -48,11 +68,9 @@ def add_date_time_job_posted(df):
 def create_location_id(df):
     return (
         df
-        .withColumn('location_id',
-                concat_ws('_',
-                          format_number(col('job_latitude'),9),
-                          format_number(col('job_longitude'),9))
-                    )
+
+        .withColumn('job_location_id',concat_ws('-',format_number(col('job_latitude'),8),format_number(col('job_longitude'),8)))
+
     )
 #function to create ID from a column : used in dim_publisher,dim_employer and silver table
 
@@ -87,13 +105,14 @@ def create_silver_table(df):
     #the main function that process the dataframe from bronze table to silver table
     #the function is composed of several functions
     try:
-        df=filter_df(df)
+        df=filter_df(df))
         df=add_job_type(df)
         df=add_date_time_job_posted(df)
         df=create_location_id(df)
         df=create_id_column(df,"employer_name")
         df=create_id_column(df,"job_publisher")
-        #print("silver table created")
+        df=create_id_column(df,"job_title")
+
         return df
     except Exception as e:
         print(e)
@@ -106,25 +125,17 @@ def merge_silver_table(batch_df,batch_id):
     spark = get_spark()
     batch_df = create_silver_table(batch_df)
 
-    target = DeltaTable.forName(spark, "job_search_project_catalog.job_search_project_schema.table_silver_job_search")
+    print("Rows after transformation:", batch_df.count())
+    target = DeltaTable.forName(spark, f"{catalog_name}.{schema_name}.{silver_table}")
     source = batch_df
-    try:
-        ( target.alias("t").merge(source.alias("s"),"t.job_id = s.job_id")
+    
+    ( 
+     target.alias("t").merge(source.alias("s"),"t.job_id = s.job_id")
             .whenMatchedUpdateAll()
-            .whenNotMatchedInsertAll() 
+            .whenNotMatchedInsertAll()
             .execute()
             )
-        metrics=target.history(1).select("operationMetrics").collect()[0][0]
-        inserted = int(metrics.get("numTargetRowsInserted", 0))
-        updated = int(metrics.get("numTargetRowsUpdated", 0))
-        deleted = int(metrics.get("numTargetRowsDeleted", 0))
-        merged_success=True
-        print("merge success") 
-        print(f"inserted: {inserted}, updated: {updated}, deleted: {deleted}")
-        
-         
-    except Exception as e:
-        print("merge failed because:", e)
+
 
 
 
@@ -143,3 +154,68 @@ def create_dim_location(df):
     df=df.select('job_latitude','job_longitude').distinct()
     df=create_location_id(df)
     return df
+    
+""" 
+    except Exception as e:
+        print("merge failed because:", e)
+"""
+
+
+def merge_dim_publisher(batch_df,batch_id):
+    print("batch:", batch_id)
+    print("Rows before transform:", batch_df.count())    
+    batch_df = batch_df.select("job_publisher")
+    batch_df = create_id_column(batch_df, "job_publisher")
+    batch_df = batch_df.dropDuplicates(["job_publisher_id"])
+
+    print("Rows after transform:", batch_df.count())
+    spark = get_spark()
+    target = DeltaTable.forName(spark,f"{catalog_name}.{schema_name}.{publisher_table}")
+    source=batch_df
+    (
+        target.alias("t")
+        .merge(source.alias("s"),"t.job_publisher_id = s.job_publisher_id")
+        .whenNotMatchedInsertAll()
+        .execute()
+    )
+
+    print("merge finished")
+
+
+def merge_dim_employer(batch_df,batch_id):
+    batch_df = batch_df.select("employer_name","employer_logo",
+                               "employer_website").distinct()
+    batch_df= create_id_column(batch_df, "employer_name")
+    batch_df= (
+        batch_df.groupBy("employer_name_id")
+        .agg(max("employer_name").alias("employer_name"),
+            max("employer_logo").alias("employer_logo"),
+            max("employer_website").alias("employer_website"))
+        )
+    spark = get_spark()
+    target = DeltaTable.forName(spark,f"{catalog_name}.{schema_name}.{employer_table}")
+    source=batch_df
+    (
+        target.alias("t").merge(source.alias("s"),"t.employer_name_id = s.employer_name_id")
+        .whenMatchedUpdate(set={
+                            "employer_logo": 
+                                "coalesce(s.employer_logo, t.employer_logo)",
+                             "employer_website": 
+                                 "coalesce(s.employer_website, t.employer_website)"})
+        .whenNotMatchedInsertAll()
+        .execute()
+    )
+
+
+def merge_dim_location(batch_df,batch_id):
+    batch_df=batch_df.select('job_latitude','job_longitude').distinct()
+    batch_df=create_location_id(batch_df)
+    batch_df=batch_df.mapInPandas(get_geo_location, schema=schema_location)
+    spark = get_spark()
+    target = DeltaTable.forName(spark,f"{catalog_name}.{schema_name}.{location_table}")
+    source=batch_df
+    (
+        target.alias("t").merge(source.alias("s"),"t.job_location_id = s.job_location_id")
+        .whenNotMatchedInsertAll()
+        .execute()
+        )

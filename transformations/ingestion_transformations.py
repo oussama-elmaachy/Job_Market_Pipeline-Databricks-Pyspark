@@ -52,7 +52,7 @@ api_job_search_project_schema = StructType([
     StructField("job_uid", StringType(), True)
 ])
 
-def create_Df(spark,data,schema_bronze=api_job_search_project_schema):
+def create_bronze_df(spark,data,schema_bronze=api_job_search_project_schema):
     try:
         df=spark.createDataFrame(data,schema_bronze)
         df=(
@@ -68,7 +68,8 @@ def create_Df(spark,data,schema_bronze=api_job_search_project_schema):
                 .withColumn("ingestion_source",lit("api_source")) 
         )
 
-def merge_df_target(spark,df_source,df_target):
+
+def merge_bronze_df_target(spark,df_source,df_target):
     target=DeltaTable.forName(spark,df_target)
     source=df_source
     print(f"start merge at :{datetime.now(ZoneInfo("Europe/Paris"))}")
