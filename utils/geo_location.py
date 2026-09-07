@@ -2,6 +2,11 @@ import reverse_geocoder as rg
 import pandas as pd
 from pyspark.sql.types import  StructType, StructField,StringType,DoubleType
 
+# this file is used to get the location of the job from the latitude and longitude
+# the function is used in the job_location notebook
+# the function uses the API reverse_geocoder to get the location of the job
+# the library  is mentionned in the requirements.txt file
+
 schema_location = StructType([
 
     StructField("job_latitude", DoubleType(), True),

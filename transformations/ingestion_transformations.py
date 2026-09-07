@@ -59,9 +59,10 @@ def create_bronze_df(spark,data,schema_bronze=api_job_search_project_schema):
             df.withColumn('ingestion_timestamp',current_timestamp())
             .withColumn("ingestion_source",lit("api_source")) 
              )
+        
         return df
+    
     except Exception as e:
-        print("error :", e)
         empty_df = spark.createDataFrame([], schema_bronze)
         return (
             empty_df.withColumn('ingestion_timestamp',current_timestamp())
@@ -72,7 +73,7 @@ def create_bronze_df(spark,data,schema_bronze=api_job_search_project_schema):
 def merge_bronze_df_target(spark,df_source,df_target):
     target=DeltaTable.forName(spark,df_target)
     source=df_source
-    print(f"start merge at :{datetime.now(ZoneInfo("Europe/Paris"))}")
+
     try:
         ( target.alias("t").merge(source.alias("s"),"t.job_id = s.job_id")
         .whenMatchedUpdate(
@@ -100,17 +101,15 @@ def merge_bronze_df_target(spark,df_source,df_target):
         inserted = int(metrics.get("numTargetRowsInserted", 0))
         updated = int(metrics.get("numTargetRowsUpdated", 0))
         deleted = int(metrics.get("numTargetRowsDeleted", 0))
-        print("merge success") 
-        print(f"inserted: {inserted}, updated: {updated}, deleted: {deleted}")
+
         return merged_success,inserted,updated,deleted
 
     except Exception as e:
-        print("merge failed because:", e)
         merged_success=False
 
         return merged_success,0,0,0
     
-
+# the merge fucntion in SQL 
     def merge_df_target_sql(spark,df_source,df_target):
 
         spark.sql(f"""
