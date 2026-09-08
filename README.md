@@ -216,7 +216,8 @@ api_key = dbutils.secrets.get(
 
 Execute notebooks in order:
 
-![](docs/data pipeline flow.png)
+
+![](docs/data_pipeline_flow.png)
 
 ---
 
