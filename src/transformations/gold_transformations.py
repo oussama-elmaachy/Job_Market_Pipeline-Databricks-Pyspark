@@ -1,5 +1,5 @@
-from utils.spark_utils import get_spark
-from utils.config import catalog_name,schema_name,bronze_table,silver_table,gold_table,checkpoint_silver_table
+from src.utils.spark_utils import get_spark
+from src.utils.config import catalog_name,schema_name,bronze_table,silver_table,gold_table,checkpoint_silver_table
 from delta.tables import DeltaTable
 from pyspark.sql.functions import max
 

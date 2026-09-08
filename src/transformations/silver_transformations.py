@@ -1,7 +1,7 @@
-from utils.spark_utils import get_spark
-from utils.geo_location import get_geo_location,schema_location
+from src.utils.spark_utils import get_spark
+from src.utils.geo_location import get_geo_location,schema_location
 from datetime import datetime
-from utils.config import (catalog_name,schema_name,bronze_table,silver_table,checkpoint_silver_table,publisher_table,employer_table,location_table)
+from src.utils.config import (catalog_name,schema_name,bronze_table,silver_table,checkpoint_silver_table,publisher_table,employer_table,location_table)
 from zoneinfo import ZoneInfo
 from delta.tables import DeltaTable
 from pyspark.sql.functions import  (
@@ -80,8 +80,7 @@ def add_job_type(df):
     
 def add_date_time_job_posted(df):
     # add date and time in paris timezone
-    return
-     (
+    return (
                     df
                     .withColumn('job_posted_at_datetime_paris',to_timestamp(col("job_posted_at_datetime_utc"), "yyyy-MM-dd'T'HH:mm:ss.SSSX"))
                     .withColumn('job_posted_at_datetime_paris',from_utc_timestamp(col("job_posted_at_datetime_utc"),"Europe/Paris"))
@@ -175,7 +174,7 @@ def create_dim_employer(df):
 
 def create_dim_location(df):
     # this is the dim table for the location
-    df=df.select('job_latitude','job_longitude').filter(col('job_latitude').isNotNull() && col('job_longitude').isNotNull()).distinct()
+    df=df.select('job_latitude','job_longitude').filter(col('job_latitude').isNotNull() & col('job_longitude').isNotNull()).distinct()
     df=create_location_id(df)
     df=df.dropDuplicates(["job_location_id"])
     return df
