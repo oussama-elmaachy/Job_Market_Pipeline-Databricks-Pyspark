@@ -46,34 +46,30 @@ job_seach_project-pipeline/
 |    |   ├── dim_job_employer_table.sql
 |    |   ├── dim_job_location_table.sql
 |    |   └── dim_job_publisher_table.sql
-|    |
-|    |
-|    ├── notebooks/
-|    |   ├── ingest_api_bronze_layer.ipynb
-|    |   ├── clean_transform_data_silver_layer.ipynb
-|    |   ├── analytics_golds_layer.ipynb
-|    |   ├── dim_employer_notebook.ipynb
-|    |   ├── dim_location_notebook.ipynb
-|    |   └── dim_publisher_notebook.ipynb
-|    | 
 |    |   
 |    ├── transformations/
 |    │   ├── gold_transformationss.ipynb
 |    │   ├── ingestion_transformations.ipynb
 |    │   └── silver_transformations.ipynb
 |    |
-|    | 
 |    ├── utils/
 |    │   ├── api_response.py
 |    │   ├── config.py
 |    │   ├── geo_location.py
 |    │   └── spark_utils.py
 |    │
-|    | 
 |    └── sql/
 |        ├── top_employers.sql
 |        └── top_regions_per_offres.sql
 │
+├── notebooks/
+|   ├── ingest_api_bronze_layer.ipynb
+|   ├── clean_transform_data_silver_layer.ipynb
+|   ├── analytics_golds_layer.ipynb
+|   ├── dim_employer_notebook.ipynb
+|   ├── dim_location_notebook.ipynb
+|   └── dim_publisher_notebook.ipynb
+|
 ├── docs/
 │   └── architecture.png
 |
