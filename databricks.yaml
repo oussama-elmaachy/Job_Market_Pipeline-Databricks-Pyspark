@@ -81,4 +81,3 @@ resources:
 sync:
   include:
     - src/**
-    - utils/**

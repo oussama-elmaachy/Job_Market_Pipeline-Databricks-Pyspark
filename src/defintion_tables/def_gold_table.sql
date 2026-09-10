@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS job_search_project_catalog.job_search_project_schema.gold_table_job_search(
     job_title_id string,
     job_title STRING,
+    job_top_skills string,
     job_type string,
     job_location_id string ,
     employer_name_id string, 

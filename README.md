@@ -1,4 +1,4 @@
-# Job Market Pipeline 🚀
+# Job Seach Pipeline 🚀
 
 ## Overview
 
@@ -16,42 +16,6 @@ the follonwing diagram provides an overview of the complete data flow, from API 
 ![](docs/architecture.png)
 
 
-
-
-                 Job Search API
-                       |
-                       |
-                       ▼
-              API Ingestion Layer
-              (Python Requests)
-                       |
-                       |
-                       ▼
-              Bronze Delta Table
-              (Raw Job Data)
-                       |
-                       |
-                       ▼
-            Data Transformation Layer
-                 (PySpark)
-                       |
-                       |
-                       ▼
-              Silver Delta Table
-          (Clean & Structured Data)
-                       |
-                       |
-                       ▼
-             Gold Analytics Layer
-            (Business Aggregations)
-                       |
-                       |
-          ┌────────────┴────────────┐
-          ▼                         ▼
-     SQL Analytics             Dashboards
-
-
----
 
 # Technologies Used
  ---------------------------------------------
@@ -177,6 +141,7 @@ Job Market Analysis
 For example, analytical queries can be used to identify:
 - Top company hiring 
 - Top region hiring
+- Top skills required
 
 ---
 

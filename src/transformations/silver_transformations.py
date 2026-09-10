@@ -1,11 +1,11 @@
 from src.utils.spark_utils import get_spark
-from src.utils.geo_location import get_geo_location,schema_location
+#from src.utils.geo_location import get_geo_location,schema_location
 from datetime import datetime
 from src.utils.config import (catalog_name,schema_name,bronze_table,silver_table,checkpoint_silver_table,publisher_table,employer_table,location_table)
 from zoneinfo import ZoneInfo
 from delta.tables import DeltaTable
 from pyspark.sql.functions import  (
-        lit,current_timestamp,col,current_timestamp,lower,when,to_timestamp,from_utc_timestamp,date_format,concat_ws,format_number,trim,regexp_replace,translate,initcap,max
+        lit,current_timestamp,col,current_timestamp,lower,when,to_timestamp,from_utc_timestamp,date_format,concat_ws,format_number,trim,regexp_replace,translate,initcap,max,expr
         )
 #function to use for the silver table
 
@@ -89,6 +89,22 @@ def add_date_time_job_posted(df):
                     )
 
 
+def extract_top_skills(df):
+    #this fucntion is used to extract the top skills from the job description
+    df = df.withColumn(
+        "job_top_skills",
+        expr("""
+                ai_gen(
+                'Extract the required top 5 skills from this job description. ' ||
+                'Return only the skills as short text as a comma-separated list. ' ||
+                job_description
+                )
+        """   
+         ) 
+        )
+    
+
+    return df
 #functions to use in dims tables and silver table
 
 def create_location_id(df):
@@ -101,18 +117,9 @@ def create_location_id(df):
 
 def create_id_column(df,column_name):
     normalized_text=regexp_replace(
-                                trim(
-                                    regexp_replace(
-                                                    lower(
-                                                            translate(col(column_name),"àáâäãåçèéêëìíîïñòóôöõùúûüÿ",
-                                                                                            "aaaaaaceeeeiiiinooooouuuuy"
-                                                        )
-                                                    )
-                            ,'[^a-z0-9]',' '
-                                            )
-                ),r"\s+","_" 
-          )
-                            
+                        trim(
+                            regexp_replace(
+                                lower(translate(col(column_name),"àáâäãåçèéêëìíîïñòóôöõùúûüÿ","aaaaaaceeeeiiiinooooouuuuy")),'[^a-z0-9]',' ')),r"\s+","_")     
     
     return (
             df
@@ -138,18 +145,18 @@ def create_silver_table(df):
         df=create_id_column(df,"employer_name")
         df=create_id_column(df,"job_publisher")
         df=create_id_column(df,"job_title")
+        df=extract_top_skills(df)
 
         return df
+    
     except Exception as e:
-        print(e)
-        return None
+        pass
     
 def merge_silver_table(batch_df,batch_id):
     spark = get_spark()
     batch_df = create_silver_table(batch_df)
     target = DeltaTable.forName(spark, f"{catalog_name}.{schema_name}.{silver_table}")
     source = batch_df
-    
     ( 
      target.alias("t").merge(source.alias("s"),"t.job_id = s.job_id")
             .whenMatchedUpdateAll()

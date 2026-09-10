@@ -17,6 +17,7 @@ def create_gold_table(df):
             df.groupBy('job_title_id','job_type','job_location_id','employer_name_id','job_publisher_id')
                 .agg(
                         max("job_title").alias("job_title"),
+                        max("job_top_skills").alias("job_top_skills"),
                         max("job_posted_at_date").alias("job_posted_at_date"),
                         max("job_posted_at_time").alias("job_posted_at_time"),
                         max("job_description").alias("job_description"),
