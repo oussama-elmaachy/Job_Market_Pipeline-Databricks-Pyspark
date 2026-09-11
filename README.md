@@ -1,8 +1,8 @@
-# Job Seach Pipeline 🚀
+# Job Market Pipeline 🚀
 
 ## Overview
 
-**Job Search Project** is an end-to-end data engineering project that collects job postings from a Job Search API, processes and transforms the data using **Databricks + PySpark**, stores the results using **Delta Lake**, and generates analytics-ready datasets.
+**Job Market Pipeline** is an end-to-end data engineering project that collects job postings from a Job Search API, processes and transforms the data using **Databricks + PySpark**, stores the results using **Delta Lake**, and generates analytics-ready datasets.
 
 The goal of this project is to demonstrate a real-world data engineering workflow including API ingestion, ETL processing, data modeling, and analytics.
 
@@ -35,7 +35,7 @@ The follonwing diagram provides an overview of the complete data flow, from API 
 # Project Structure
 
 ```
-job_seach_project-pipeline/
+Job_Market_Pipeline-Databricks-Pyspark/
 
 │
 |── src/
