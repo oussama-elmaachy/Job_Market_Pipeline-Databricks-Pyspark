@@ -9,9 +9,9 @@ The goal of this project is to demonstrate a real-world data engineering workflo
 ---
 
 ## Architecture
-the pipeline follows a medaillon architecture implemented in Databricks, progressively transforming raw job -posintinf data into clean, structured, and business-ready datasets.
+The pipeline follows a medaillon architecture implemented in Databricks, progressively transforming raw job -posinting data into clean, structured, and business-ready datasets.
 
-the follonwing diagram provides an overview of the complete data flow, from API ingestion through the Bronze, Silver , and Gold layers to the final analaystics nad visualization consumers.
+The follonwing diagram provides an overview of the complete data flow, from API ingestion through the Bronze, Silver , and Gold layers to the final analaystics nad visualization consumers.
 
 ![](docs/architecture.png)
 
