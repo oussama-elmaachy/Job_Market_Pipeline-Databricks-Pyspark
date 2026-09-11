@@ -1,0 +1,27 @@
+CREATE TABLE IF NOT EXISTS job_search_project_catalog.job_search_project_schema.silver_table_job_search(
+    job_id STRING,
+    job_title STRING,
+    employer_name STRING,
+    job_publisher STRING,
+    job_employment_type STRING,
+    job_apply_link STRING,
+    job_apply_is_direct BOOLEAN,
+    job_description STRING,
+    job_is_remote BOOLEAN,
+    job_posted_at_datetime_utc STRING,
+    job_latitude DOUBLE,
+    job_longitude DOUBLE,
+    ingestion_timestamp TIMESTAMP,
+    ingestion_source STRING,
+    job_type string,
+    job_posted_at_datetime_paris timestamp,
+    job_posted_at_time string, 
+    job_posted_at_date date, 
+    job_location_id string ,
+    employer_name_id string, 
+    job_publisher_id string,
+    job_title_id string,
+    job_top_skills string
+)
+tblproperties (delta.autoOptimize.optimizeWrite = true,
+        delta.enableChangeDataFeed = true);

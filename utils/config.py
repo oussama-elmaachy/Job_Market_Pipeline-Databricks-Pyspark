@@ -1,6 +1,0 @@
-scope_api_name="scope_api_job_search_project"
-catalog_name = "job_search_catalog"
-schema_name = "job_search_schema"
-bronze_table = "job_search_bronze_table"
-silver_table="job_search_silver_table"
-gold_table="job_search_gold_table"

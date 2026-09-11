@@ -1,0 +1,83 @@
+bundle:
+  name: job_search_project
+
+resources:
+  jobs:
+    Job_search_project:
+      name: Job_search_project
+      schedule:
+        quartz_cron_expression: 0 0 13,20 ? * MON-FRI
+        timezone_id: Europe/Paris
+        pause_status: UNPAUSED
+
+      tasks:
+        - task_key: Ingestion_data
+          notebook_task:
+            notebook_path: ./src/notebooks/api_ingestion_bronze_layer.ipynb
+            source: WORKSPACE
+          max_retries: 2
+          min_retry_interval_millis: 300000
+          disable_auto_optimization: false
+          environment_key: Default
+
+        - task_key: new_records
+          depends_on:
+            - task_key: Ingestion_data
+          condition_task:
+            op: GREATER_THAN
+            left: "{{tasks.Ingestion_data.values.upsert_rows}}"
+            right: "0"
+
+        - task_key: Silver_transformations
+          depends_on:
+            - task_key: new_records
+              outcome: "true"
+          notebook_task:
+            notebook_path: ./src/notebooks/clear_transform_data_silver_layer.ipynb
+            source: WORKSPACE
+
+        - task_key: Gold_aggregation
+          depends_on:
+            - task_key: Silver_transformations
+          notebook_task:
+            notebook_path: ./src/notebooks/analytics_gold_layer.ipynb
+            source: WORKSPACE
+          max_retries: 2
+          min_retry_interval_millis: 900000
+          disable_auto_optimization: false
+
+        - task_key: dim_employer
+          depends_on:
+            - task_key: new_records
+              outcome: "true"
+          notebook_task:
+            notebook_path: ./src/notebooks/dim_employer_notebook.ipynb
+            source: WORKSPACE
+
+        - task_key: dim_location
+          depends_on:
+            - task_key: new_records
+              outcome: "true"
+          notebook_task:
+            notebook_path: ./src/notebooks/dim_location_notebook.ipynb
+            source: WORKSPACE
+
+        - task_key: dim_publisher
+          depends_on:
+            - task_key: new_records
+              outcome: "true"
+          notebook_task:
+            notebook_path: ./src/notebooks/dim_publisher_notebook.ipynb
+            source: WORKSPACE
+
+      queue:
+        enabled: true
+      environments:
+        - environment_key: Default
+          spec:
+            environment_version: "5"
+      performance_target: PERFORMANCE_OPTIMIZED
+
+sync:
+  include:
+    - src/**

@@ -10,7 +10,8 @@ class api_job_search:
       
     headers={
                 "x-rapidapi-key": self.api_token,
-                "x-rapidapi-host": self.api_host 
+                "x-rapidapi-host": self.api_host ,
+                "Cpntentent-Type": "application/json"
             }
     querystring = {
                     "query":job_title,
@@ -22,8 +23,9 @@ class api_job_search:
     try :
 
         response= requests.get(self.api_url, headers=headers, params=querystring)
-        results=response.json()
-        raw_data=results['data']
+        resulats=response.json()
+        raw_data=resulats['data']['jobs']
+
         return raw_data
       
     except Exception as e:
