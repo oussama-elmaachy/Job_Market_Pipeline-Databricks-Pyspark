@@ -60,7 +60,8 @@ Job_Market_Pipeline-Databricks-Pyspark/
 |    │
 |    └── sql/
 |        ├── top_employers.sql
-|        └── top_regions_per_offres.sql
+|        ├── top_regions_per_offres.sql
+|        └── top_skills.sql
 │
 ├── notebooks/
 |   ├── ingest_api_bronze_layer.ipynb
