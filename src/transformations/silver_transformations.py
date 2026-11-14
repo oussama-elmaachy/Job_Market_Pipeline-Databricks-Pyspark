@@ -33,7 +33,10 @@ def filter_silver_df(df):
 
 def add_job_type(df):
     # add job type to determine if it is a cdi or cdd or freelance or stage or alternance
-    df=df.withColumn('job_employment_type',lower(col('job_employment_type')))
+    df=(df
+        .withColumn('job_employment_type',lower(col('job_employment_type')))
+        .withColumn('job_description',lower(col('job_description')))
+        )
 
     freelance_condition = (
         lower(col('job_employment_type')).contains('freelance')|
