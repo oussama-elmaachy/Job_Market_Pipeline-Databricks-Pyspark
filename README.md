@@ -46,7 +46,10 @@ Job_Market_Pipeline-Databricks-Pyspark/
 |   ├── dim_employer_notebook.ipynb
 |   ├── dim_location_notebook.ipynb
 |   └── dim_publisher_notebook.ipynb
-|   
+|
+├── resources/
+│   └── seach_job.job.yaml   
+|
 |── src/
 |    ├── defintion_tables/
 |    |   ├── def_bronze_table.sql
